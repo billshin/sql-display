@@ -11,6 +11,7 @@ const response_data = ref();
 const api_url = ref("")
 const sql_ref = ref('SELECT * FROM users WHERE id = 1 AND name = \'John Doe\';');
 const codeBlock = ref(null);
+
 const sqlEditorRef = ref(null);
 let editor;
 let sqlEditor;
@@ -22,6 +23,8 @@ const test_http_method = ref('get');
 const test_columns = ref('SQL_TEXT1,SQL_TEXT2,SQL_TEXT3');
 const test_sql_Language = ref('sql');
 const test_api_url = ref('');
+
+const SQL_Area_Width = ref('container');
 
 
 // Parser Options
@@ -236,32 +239,25 @@ onMounted(() => {
           The following query parameters are supported:</p>
         <ul>
           <li><strong>http_method</strong>: The HTTP method to use for the API request (e.g., <code>get</code>,
-            <code>post</code>).</li>
+            <code>post</code>).
+          </li>
           <li><strong>columns</strong>: A comma-separated list of keys to extract from the JSON response. The values of
             these keys will be concatenated to form the SQL query.</li>
           <li><strong>sql_Language</strong>: The SQL dialect to use for formatting (e.g., <code>plsql</code>,
-            <code>mysql</code>).</li>
+            <code>mysql</code>).
+          </li>
           <li><strong>api_url</strong>: The URL of the API endpoint. This URL must be URL-encoded.</li>
         </ul>
         <p><strong>Example:</strong></p>
         <pre><code>?http_method=get&columns=SQL_TEXT1,SQL_TEXT2&sql_Language=plsql&api_url=ENCODED_URL_HERE</code></pre>
-        
+
         <hr>
 
-        <h5>Test API</h5>
-         <!-- @submit.prevent="handleTestSubmit" -->
-        <form action="." method="get" >
-          <div class="mb-3">
-            <label for="test_api_url" class="form-label">API URL</label>
-            <input type="text" class="form-control" id="test_api_url" name="api_url" v-model="test_api_url">
-          </div>
-          <div class="mb-3">
-            <label for="test_http_method" class="form-label">HTTP Method</label>
-            <select class="form-select" id="test_http_method" name="http_method" v-model="test_http_method">
-              <option value="get">GET</option>
-              <option value="post">POST</option>
-            </select>
-          </div>
+
+        <!-- @submit.prevent="handleTestSubmit" -->
+        <form action="." method="get">
+
+
           <div class="mb-3">
             <label for="test_columns" class="form-label">Columns (comma-separated)</label>
             <input type="text" class="form-control" id="test_columns" name="columns" v-model="test_columns">
@@ -272,14 +268,25 @@ onMounted(() => {
               <option v-for="lang in languageOptions" :key="lang" :value="lang">{{ lang }}</option>
             </select>
           </div>
+          <div class="mb-3">
+            <label for="test_http_method" class="form-label">API HTTP Method</label>
+            <select class="form-select" id="test_http_method" name="http_method" v-model="test_http_method">
+              <option value="get">GET</option>
+              <option value="post">POST</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="test_api_url" class="form-label">API URL</label>
+            <input type="text" class="form-control" id="test_api_url" name="api_url" v-model="test_api_url">
+          </div>
           <button type="submit" class="btn btn-primary">Query Format</button>
         </form>
       </div>
 
-      <div class="input-group mt-3 mb-3">
+      <!-- <div class="input-group mt-3 mb-3">
         <span class="input-group-text">API_URL</span>
         <input type="text" class="form-control" placeholder="api_url" :value="api_url">
-      </div>
+      </div> -->
 
     </div>
 
@@ -309,11 +316,22 @@ onMounted(() => {
                 <label for="tabWidth" class="form-label">Tab Width</label>
                 <input type="number" id="tabWidth" v-model.number="tabWidth" class="form-control" min="0">
               </div>
-              <div class="col-md-3 mb-3">
+              <!-- <div class="col-md-3 mb-3">
                 <label for="linesBetweenQueries" class="form-label">Lines Between Queries</label>
                 <input type="number" id="linesBetweenQueries" v-model.number="linesBetweenQueries" class="form-control"
                   min="0">
+              </div> -->
+
+              <div class="col-md-3 mb-3">
+                <label for="SQL_Area_Width" class="form-label">SQL Area Width</label>
+                <select id="SQL_Area_Width" v-model="SQL_Area_Width" class="form-select">
+                  <option value="container" >Stand</option>
+                  <option value="container-fluid">Full Width</option>
+                  <!-- <option v-for="kc in keywordCaseOptions" :key="kc" :value="kc">{{ kc }}</option> -->
+                </select>
               </div>
+
+           
             </div>
           </div>
         </div>
@@ -334,7 +352,7 @@ onMounted(() => {
     </ul>
   </div>
 
-  <div class="container-fluid">
+  <div :class="SQL_Area_Width">
     <div class="row">
       <div :class="{ 'col-md-6': tab === 'all', 'col-12': tab !== 'all' }" v-show="tab === 'enter' || tab === 'all'">
         <div class="card shadow-sm">
@@ -342,6 +360,11 @@ onMounted(() => {
             <h5 class="card-title mb-0">Enter SQL</h5>
           </div>
           <div class="card-body">
+             <div v-if="isLoading" class="loading-overlay">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
             <div ref="sqlEditorRef"></div>
           </div>
         </div>

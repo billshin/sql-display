@@ -6,7 +6,10 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
-  outputDir: 'B:\\WebSite\\Front_View\\sql-display',
+  
+   build: {
+    outDir: 'B:\\WebSite\\Front_View\\sql-display',
+  },
   base: '/Front_View/sql-display/',
   plugins: [
     vue(),
